@@ -1,27 +1,25 @@
 public class Item {
     private String barcode, category, name;
-    private int kr, oere;
+    private double price;
 
-    public Item(String barcode, String category, String name, int kr, int oere) {
+    public Item(String barcode, String category, String name, double price) {
         this.barcode = barcode;
         this.category = category;
         this.name = name;
-        this.kr = kr;
-        this.oere = oere;
+        this.price = price;
+
     }
     public String getCategory() {
         return category;
     }
 
+    public String getBarcode() {return barcode;}
+
     public String getName() {
         return name;
     }
 
-    public int getKr() {
-        return kr;
-    }
-
-    public int getOere() {
-        return oere;
+    public double getPrice() {
+        return price;
     }
 }

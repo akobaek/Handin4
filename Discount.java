@@ -1,12 +1,12 @@
 public class Discount {
     private String barcode;
-    private int limit, kr, oere;
+    private int limit;
+    private double price;
 
-    public Discount(String barcode, int limit, int kr, int oere) {
+    public Discount(String barcode, int limit, double price) {
         this.barcode = barcode;
         this.limit = limit;
-        this.kr = kr;
-        this.oere = oere;
+        this.price = price;
     }
 
     public String getBarcode() {
@@ -17,11 +17,7 @@ public class Discount {
         return limit;
     }
 
-    public int getKr() {
-        return kr;
-    }
-
-    public int getOere() {
-        return oere;
+    public double getPrice() {
+        return price;
     }
 }
