@@ -17,8 +17,8 @@ public class CashRegister {
         discounts = new HashMap<>();
         purchase = new HashMap<>();
         activeItemDictionary = new HashMap<>();
-        barcodeFileImporter = new BarcodeFileImporter();
 
+        barcodeFileImporter = new BarcodeFileImporter();
         items = barcodeFileImporter.priceFileImporter(priceFilename);
         discounts = barcodeFileImporter.discountFileImporter(discountsFilename);
     }
@@ -71,7 +71,10 @@ public class CashRegister {
         System.out.print(item.getName()+"\n");
         System.out.print(String.format("%-19s","  "+quantity+" x "+ printablePrice(item.getPrice())));
         System.out.print(String.format("%19s", printablePrice(totalPrice) + "\n"));
-        if (discountActive(barcode)){printDiscount(barcode);}
+
+        if (discountActive(barcode)){
+            printDiscount(barcode);
+        }
         updateSubTotal(totalPrice);
     }
 
