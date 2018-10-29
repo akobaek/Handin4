@@ -1,4 +1,3 @@
-import java.io.*;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -9,6 +8,7 @@ public class CashRegister {
     private Map<String, Integer> purchase;
     private String line;
     private Map<String, String> activeItemDictionary;
+    private BarcodeFileImporter barcodeFileImporter;
     private double totalDiscount = 0.00;
     private double subTotal = 0.00;
 
@@ -17,61 +17,13 @@ public class CashRegister {
         discounts = new HashMap<>();
         purchase = new HashMap<>();
         activeItemDictionary = new HashMap<>();
-        try {
-            FileReader priceFileReader = new FileReader(priceFilename);
-            BufferedReader priceBufferedReader = new BufferedReader(priceFileReader);
+        barcodeFileImporter = new BarcodeFileImporter();
 
-            while((line = priceBufferedReader.readLine()) != null) {
-                String[] itemInput = line.split(",");
-                String stringToBeParsed = itemInput[3]+"."+itemInput[4];
-                double doubleToBeParsed = Double.parseDouble(stringToBeParsed);
-                Item itemToAdd = new Item(itemInput[0], itemInput[1], itemInput[2], doubleToBeParsed);
-                items.put(itemInput[0],itemToAdd);
-            }
-            priceBufferedReader.close();
-
-            FileReader discountFileReader = new FileReader(discountsFilename);
-            BufferedReader discountBufferedReader = new BufferedReader(discountFileReader);
-
-            while((line = discountBufferedReader.readLine()) != null) {
-                String[] discountInput = line.split(",");
-                String discountStringToBeParsed = discountInput[2]+"."+discountInput[3];
-                double discountDoubleToBeParsed = (double) Double.parseDouble(discountStringToBeParsed);
-
-                Discount discountToAdd = new Discount(discountInput[0], Integer.parseInt(discountInput[1]), discountDoubleToBeParsed);
-                discounts.put(discountInput[0],discountToAdd);
-            }
-            discountBufferedReader.close();
-        }
-        catch (FileNotFoundException e){
-            System.out.println("Unable to find at least one of the files named "+discountsFilename+" or "+priceFilename);
-        }
-        catch (IOException e){
-            e.printStackTrace();
-        }
-
+        items = barcodeFileImporter.priceFileImporter(priceFilename);
+        discounts = barcodeFileImporter.discountFileImporter(discountsFilename);
     }
     public void importPurchase(String barcodeFilename){
-        try{
-            FileReader barcodeFileReader = new FileReader(barcodeFilename);
-            BufferedReader barcodeBufferedReader = new BufferedReader(barcodeFileReader);
-
-            while((line = barcodeBufferedReader.readLine()) != null) {
-                if (purchase.get(line) != null){
-                    purchase.put(line,purchase.get(line)+1);
-                }
-                else{
-                    purchase.put(line,1);
-                }
-            }
-            barcodeBufferedReader.close();
-        }
-        catch (FileNotFoundException e){
-            System.out.println("Unable to find the file named "+barcodeFilename);
-        }
-        catch (IOException e){
-            e.printStackTrace();
-        }
+        purchase = barcodeFileImporter.purchaseFileImporter(barcodeFilename);
     }
 
     public List<String> extractCategories(){
@@ -165,11 +117,11 @@ public class CashRegister {
         }
         System.out.print(String.format("%-18s","TOTAL"));
         System.out.print(String.format("%19s",printablePrice(subTotal-totalDiscount))+"\n\n");
-        System.out.print(String.format("%-18s","KØBET HAR UDLØST "+mærkerCount()+" MÆRKER\n\n"));
+        System.out.print(String.format("%-18s","KØBET HAR UDLØST "+ maerkeCount()+" MÆRKER\n\n"));
         System.out.print(String.format("%-18s","MOMS UDGØR"));
         System.out.print(String.format("%19s",printablePrice((subTotal-totalDiscount)*0.2))+"\n\n");
     }
-    public int mærkerCount(){
+    public int maerkeCount(){
         return (int) (subTotal-totalDiscount)/50;
     }
     public List<String> getItemsInCategory(String category){
