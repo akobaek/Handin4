@@ -7,7 +7,20 @@ import java.util.Map;
 
 public class BarcodeFileImporter {
     public BarcodeFileImporter(){}
-    public Map<String, Item> priceFileImporter(String priceFilename) {
+
+    public Map<String,Item> getItems(String priceFilename, String discountFilename){
+        Map<String,Item> items = priceFileImporter(priceFilename);
+        Map<String,Discount> discounts = discountFileImporter(discountFilename);
+
+        for (Item item:items.values()) {
+            if (discounts.containsKey(item.getBarcode())){
+                item.setDiscount(discounts.get(item.getBarcode()));
+            }
+        }
+        return items;
+        }
+
+    private Map<String, Item> priceFileImporter(String priceFilename) {
         String line;
         Map<String, Item> items = new HashMap<>();
         try {
@@ -32,7 +45,7 @@ public class BarcodeFileImporter {
         }
         return items;
     }
-    public Map<String, Discount> discountFileImporter(String discountsFilename) {
+    private Map<String, Discount> discountFileImporter(String discountsFilename) {
         String line;
         Map<String, Discount> discounts = new HashMap<>();
         try {

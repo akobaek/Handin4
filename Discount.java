@@ -1,3 +1,5 @@
+import java.text.DecimalFormat;
+
 public class Discount {
     private String barcode;
     private int limit;
@@ -8,18 +10,16 @@ public class Discount {
         this.limit = limit;
         this.price = price;
     }
-
-    public String getBarcode() {
-        return barcode;
+    public void printDiscount(int quantity, double itemPrice, DecimalFormat doubleFormatter) {
+        double totDiscount = totalDiscount(quantity, itemPrice);
+        System.out.print(String.format("%-19s", "RABAT"));
+        System.out.print(String.format("%20s", doubleFormatter.format(totDiscount) + "-\n"));
+    }
+    public double totalDiscount(int quantity, double itemPrice) {
+        return quantity * (itemPrice - price);
     }
 
     public int getLimit() {
         return limit;
-
-    }
-
-    public double getPrice() {
-        return price;
-
     }
 }

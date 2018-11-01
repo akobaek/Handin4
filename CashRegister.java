@@ -4,24 +4,25 @@ import java.util.*;
 
 public class CashRegister {
     private Map<String, Item> items;
-    private Map<String, Discount> discounts;
     private Map<String, Integer> purchase;
-    private String line;
     private BarcodeFileImporter barcodeFileImporter;
-    private double totalDiscount;
-    private double subTotal;
+    private DecimalFormat doubleFormatter;
 
     public CashRegister(String priceFilename, String discountsFilename) {
         barcodeFileImporter = new BarcodeFileImporter();
-        items = barcodeFileImporter.priceFileImporter(priceFilename);
-        discounts = barcodeFileImporter.discountFileImporter(discountsFilename);
+        items = barcodeFileImporter.getItems(priceFilename, discountsFilename);
+        DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
+        otherSymbols.setDecimalSeparator(',');
+        otherSymbols.setGroupingSeparator('.');
+        doubleFormatter = new DecimalFormat("##.00", otherSymbols);
+
     }
 
-    public void importPurchase(String barcodeFilename) {
+    private void importPurchase(String barcodeFilename) {
         purchase = barcodeFileImporter.purchaseFileImporter(barcodeFilename);
     }
 
-    public List<String> extractCategories() {
+    private List<String> extractCategories() {
         List<String> categories = new ArrayList<>();
         for (String barcode : purchase.keySet()) {
             if (!categories.contains(items.get(barcode).getCategory())) {
@@ -36,69 +37,18 @@ public class CashRegister {
         return listToBeSorted;
     }
 
-    public boolean discountActive(String barcode) {
-        return (discounts.get(barcode) != null) && (discounts.get(barcode).getLimit() <= purchase.get(barcode));
-    }
-
-    public void printCategory(String category) {
+    private void printCategory(String category) {
         String categoryString = "* " + category + " *";
         int spacing = (18 + categoryString.length() / 2);
         System.out.println();
         System.out.println(String.format("%" + spacing + "s", categoryString));
     }
 
-    public void printItem(Item item, int quantity) {
-        double totalPrice = (item.getPrice() * quantity);
-        if (quantity == 1) {
-            System.out.print(String.format("%-29s", item.getName()));
-            System.out.println(String.format("%8s", printablePrice(totalPrice)));
-        } else {
-            System.out.println(item.getName());
-            System.out.print(String.format("%-18s", "  " + quantity + " x " + printablePrice(item.getPrice())));
-            System.out.println(String.format("%19s", printablePrice(totalPrice)));
-        }
-    }
-
-    public void updateSubTotal(double addedPrice) {
-        subTotal += addedPrice;
-    }
-
-    public void updateTotalDiscount(double addedDiscount) {
-        totalDiscount += addedDiscount;
-    }
-
-    public double totalDiscount(Item item, Discount discount, int quantity) {
-        return quantity * (item.getPrice() - discount.getPrice());
-    }
-
-    public double printDiscount(String barcode, int quantity) {
-        Item item = items.get(barcode);
-        Discount discount = discounts.get(barcode);
-        double totDiscount = totalDiscount(item, discount, quantity);
-
-        System.out.print(String.format("%-19s", "RABAT"));
-        System.out.print(String.format("%20s", printablePrice(totDiscount) + "-\n"));
-
-        return totDiscount;
-    }
-
-    public String printablePrice(double price) {
+    private String printablePrice(double price) {
         String printablePrice;
-        DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
-        otherSymbols.setDecimalSeparator(',');
-        otherSymbols.setGroupingSeparator('.');
-        return new DecimalFormat("##.00", otherSymbols).format(price);
+        return doubleFormatter.format(price);
     }
-
-    public void resetTotalDiscount() {
-        totalDiscount = 0.00;
-    }
-
-    public void resetSubTotal() {
-        subTotal = 0.00;
-    }
-
-    public void printSummary(double subTotal, double totalDiscount) {
+    private void printSummary(double subTotal, double totalDiscount) {
         System.out.print("\n-------------------------------------\n\n");
         System.out.print(String.format("%-18s", "SUBTOT"));
         System.out.print(String.format("%19s", printablePrice(subTotal)) + "\n\n");
@@ -113,11 +63,11 @@ public class CashRegister {
         System.out.print(String.format("%19s", printablePrice((subTotal - totalDiscount) * 0.2)) + "\n\n");
     }
 
-    public int maerkeCount(double subTotal, double totalDiscount) {
+    private int maerkeCount(double subTotal, double totalDiscount) {
         return (int) (subTotal - totalDiscount) / 50;
     }
 
-    public List<Item> getItemsInCategory(String category) {
+    private List<Item> getItemsInCategory(String category) {
         List<Item> itemsInCategory = new ArrayList<>();
         for (String barcode : purchase.keySet()) {
             Item item = items.get(barcode);
@@ -140,21 +90,14 @@ public class CashRegister {
             Collections.sort(currentItems, (Item i1, Item i2) -> i1.getName().compareTo(i2.getName()));
             printCategory(category);
             for (Item item : currentItems) {
-                String barcode = item.getBarcode();
-                int quantity = purchase.get(barcode);
-                printItem(item, quantity);
+                int quantity = purchase.get(item.getBarcode());
+                item.printItem(quantity, doubleFormatter);
                 subTotal += item.getPrice() * quantity;
-                if (discountActive(barcode)) {
-                    Discount discount = discounts.get(barcode);
-                    printDiscount(barcode, quantity);
-                    totalDiscount += totalDiscount(item, discount, quantity);
+                if (item.activeDiscount(quantity)) {
+                    totalDiscount += item.getDiscount().totalDiscount(quantity,item.getPrice());
                 }
-
             }
         }
-
         printSummary(subTotal, totalDiscount);
-        resetSubTotal();
-        resetTotalDiscount();
     }
 }
