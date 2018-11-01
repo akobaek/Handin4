@@ -98,7 +98,12 @@ public class CashRegister {
     }
 
     public String printablePrice(double price){
-        return (new DecimalFormat("##.00").format(price));
+        String printablePrice;
+        printablePrice = (new DecimalFormat("##.00").format(price));
+        if (printablePrice.contains(".")) {
+            printablePrice = printablePrice.replaceFirst(".",",");
+        }
+        return printablePrice;
     }
 
     public double totalDiscount(Item item, Discount discount, int quantity){
