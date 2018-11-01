@@ -1,6 +1,7 @@
 public class Item {
     private String barcode, category, name;
     private double price;
+    private Discount discount;
 
     public Item(String barcode, String category, String name, double price) {
         this.barcode = barcode;
@@ -9,11 +10,14 @@ public class Item {
         this.price = price;
 
     }
+
     public String getCategory() {
         return category;
     }
 
-    public String getBarcode() {return barcode;}
+    public String getBarcode() {
+        return barcode;
+    }
 
     public String getName() {
         return name;

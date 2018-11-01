@@ -15,9 +15,11 @@ public class Discount {
 
     public int getLimit() {
         return limit;
+
     }
 
     public double getPrice() {
         return price;
+
     }
 }
