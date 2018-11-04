@@ -5,13 +5,23 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The {@code BarcideFileImporter} imports different types of files containing barcodes in comma separated files.
+ */
 public class BarcodeFileImporter {
     public BarcodeFileImporter(){}
 
+    /**
+     * Returns a map of barcodes to items containing discounts, given a file names of price- and discount files.
+     * @param priceFilename Name of comma separated barcode file containing barcode, category, name, price.
+     * @param discountFilename Name of comma separated barcode file containing barcode, limit, price.
+     * @return Map of barcodes to items containing discounts available.
+     */
     public Map<String,Item> getItems(String priceFilename, String discountFilename){
+        //Imports files.
         Map<String,Item> items = priceFileImporter(priceFilename);
         Map<String,Discount> discounts = discountFileImporter(discountFilename);
-
+        //Adds the imported discounts to the imported items.
         for (Item item:items.values()) {
             if (discounts.containsKey(item.getBarcode())){
                 item.setDiscount(discounts.get(item.getBarcode()));
@@ -20,6 +30,11 @@ public class BarcodeFileImporter {
         return items;
         }
 
+    /**
+     * Imports a map of barcodes to items given a file name of a price file.
+     * @param priceFilename Name of comma separated barcode file containing barcode, category, name, price.
+     * @return Map of barcodes to items available.
+     */
     private Map<String, Item> priceFileImporter(String priceFilename) {
         String line;
         Map<String, Item> items = new HashMap<>();
@@ -45,6 +60,12 @@ public class BarcodeFileImporter {
         }
         return items;
     }
+
+    /**
+     * Imports a map of barcodes to discounts given a file name of a discount file.
+     * @param discountsFilename Name of comma separated barcode file containing barcode, limit, price.
+     * @return Map of barcodes to discounts available.
+     */
     private Map<String, Discount> discountFileImporter(String discountsFilename) {
         String line;
         Map<String, Discount> discounts = new HashMap<>();
@@ -71,6 +92,12 @@ public class BarcodeFileImporter {
         }
         return discounts;
     }
+
+    /**
+     * Imports a map of barcodes to quantities given a file name of a purchase file.
+     * @param barcodeFilename A file containing barcodes.
+     * @return Map of barcodes to quantities.
+     */
     public Map<String,Integer> purchaseFileImporter(String barcodeFilename) {
         String line;
         Map<String,Integer> purchase = new HashMap<>();
